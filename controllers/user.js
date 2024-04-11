@@ -8,8 +8,10 @@ router
 
     try {
       const userCreated = await postNewUser(username, password);
+      res.status(userCreated.statusCode).json({ success: userCreated.success, message: userCreated.message});
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      res.status(500).json({ success: false, message: "Internal Server Error" });
     }
   })
   .post('/login', (req, res) => {
