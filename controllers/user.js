@@ -8,7 +8,7 @@ router
 
     try {
       const userCreated = await postNewUser(username, password);
-      res.status(userCreated.statusCode).json(userCreated);
+      res.status(userCreated.statusCode).json({ success: userCreated.success, message: userCreated.message});
     } catch (err) {
       console.error(err);
       res.status(500).json({ success: false, message: "Internal Server Error" });
