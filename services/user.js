@@ -4,19 +4,19 @@ const postNewUser = async (username, password) => {
     const userExists = await db.users.findOne({ username });
 
     if (userExists){
-      return { success: false, message: "Användarnamnet finns redan" };
+      return { statusCode: 400, success: false, message: "Användarnamnet finns redan" };
     } else {
       const newUser = { username, password };
       await db.users.insert(newUser);
-      return { success: true, message: "Användare skapad" };
+      return { statusCode: 201, success: true, message: "Användare skapad" };
     }
   } catch (error){
       if(error.code === 'ECONNREFUSED'){
         console.error("Database connection refused:", error);
-            return { success: false, message: "Database connection refused" };
+            return { statusCode: 500, success: false, message: "Database connection refused" };
       } else {
         console.error("Database error:", error);
-          return { success: false, message: "Ett fel uppstod med databasen när användaren skulle skapas" };
+          return { statusCode: 500, success: false, message: "Ett fel uppstod med databasen när användaren skulle skapas" };
     }
   }
 };
