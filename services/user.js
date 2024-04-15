@@ -2,52 +2,105 @@ const db = require('../database');
 const jwt = require('jsonwebtoken');
 
 const postNewUser = async (username, password) => {
-      // Logik för att se om befintligt användarnamn fortfarande finns, annars skapa upp användare och returnera ett lyckat avslut
+  // Logik för att se om befintligt användarnamn fortfarande finns, annars skapa upp användare och returnera ett lyckat avslut
   try {
     const userExists = await db.users.findOne({ username });
 
     if (userExists) {
-      return { statusCode: 400, success: false, message: "Användarnamnet finns redan" };
+      return {
+        statusCode: 400,
+        success: false,
+        message: 'Användarnamnet finns redan',
+      };
     } else {
-      return new Promise((resolve, reject) => {
-        const newUser = { username, password };
-        db.users.insert(newUser, (err, newDoc) => {
-          if (err) {
-            reject({ statusCode: 500, success: false, message: "Internal Server Error" });
-          } else {
-            const token = jwt.sign(
-              { userId: newDoc._id, username: username },
-              process.env.JWT_KEY,
-              { expiresIn: '24h' }
-            );
-            resolve({ statusCode: 201, success: true, message: "Användare skapad", token: token });
-          }
-        });
-      });
-    }
-  } catch (error){
-      if(error.code === 'ECONNREFUSED'){
-        console.error("Database connection refused:", error);
-            return { statusCode: 500, success: false, message: "Database connection refused" };
+      const newUser = { username, password };
+      const userRegistered = await db.users.insert(newUser);
+
+      if (!userRegistered) {
+        return {
+          statusCode: 500,
+          success: false,
+          message: 'Internal Server Error',
+        };
       } else {
-        console.error("Database error:", error);
-          return { statusCode: 500, success: false, message: "Ett fel uppstod med databasen när användaren skulle skapas" };
+        return {
+          statusCode: 201,
+          success: true,
+          message: 'Användare skapad',
+        };
+      }
     }
+  } catch (error) {
+    return {
+      statusCode: 500,
+      success: false,
+      message: 'Ett fel uppstod med databasen när användaren skulle skapas',
+    };
   }
 };
-const getUserHistory = async (userId) =>{
-  // hitta orders kopplat till id of said user  
+
+const loginUser = async (username, password) => {
+  let status = 400,
+    success = false,
+    token;
   try {
+    const user = await db.users.findOne({ username: username }, (err, doc) => {
+      if (err) return null;
 
-    //temportärt findOne och id som returneras innan vi har våran orders.db set up (skall vara db.beans se för historiken av ordrar)
-    const userHistory = await db.users.findOne({ _id: userId }, { _id: 1 });
-    return userHistory._id;
+      return doc;
+    });
+    console.log('user', user);
 
-  } catch (error) {
-    console.error("Error fetching user history:", error);
-    throw error; 
+    if (user) {
+      const passwordMatch = password === user.password;
+
+      if (passwordMatch) {
+        status = 200;
+        success = true;
+        token = jwt.sign(
+          { userId: user._id, username: user.username },
+          process.env.JWT_KEY,
+          { expiresIn: '8h' }
+        );
+      }
+    } else {
+      status = 404;
+    }
+    return { status, success, token };
+  } catch (err) {
+    return { status: 500, success };
   }
-}
+};
 
+const getUserHistory = async (userId) => {
+  try {
+    const userHistory = await db.beans.find({ userId });
 
-module.exports = {postNewUser, getUserHistory}
+    let response = { success: true };
+
+    if (userHistory) {
+      response = { success: true, orderHistory: [] };
+
+      userHistory.map((order) =>
+        response.orderHistory.push({
+          total: order.total,
+          orderNr: order._id,
+          orderDate: order.orderDate,
+        })
+      );
+      console.log('userHistory', userHistory);
+    } else {
+      response = {
+        success: false,
+        error: 'Ingen historik funnen på användaren',
+      };
+    }
+
+    return response;
+  } catch (error) {
+    console.error('Error fetching user history:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+module.exports = { postNewUser, getUserHistory, loginUser };
