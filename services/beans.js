@@ -1,12 +1,12 @@
-const { readFile } = require('node:fs/promises');
-const db = require('../database');
-const { differenceInMinutes, addMinutes } = require('date-fns');
+const { readFile } = require("node:fs/promises");
+const db = require("../database");
+const { differenceInMinutes, addMinutes } = require("date-fns");
 
 const getMenuList = async () => {
   try {
-    const menu = await readFile('menu.json');
+    const menu = await readFile("menu.json");
 
-    return menu.toString('utf-8');
+    return menu.toString("utf-8");
   } catch (err) {
     console.log(err);
   }
@@ -14,9 +14,7 @@ const getMenuList = async () => {
 
 const postNewOrder = async (order, userId) => {
   try {
-    const orderValidation = await validateOrderAndCalculateTotal(
-      order.details.order
-    );
+    const orderValidation = await validateOrderAndCalculateTotal(order.details.order);
     if (orderValidation.valid) {
       const minutesEta = Math.floor(Math.random() * (30 - 12 + 1)) + 12;
       const orderEta = addMinutes(new Date(), minutesEta);
@@ -64,10 +62,10 @@ const getOrderEta = async (orderNr, userId) => {
       if (minutesLeft > 0) {
         return { status: 200, eta: minutesLeft };
       } else {
-        return { status: 400, error: 'Order ska ha anlänt.' };
+        return { status: 400, error: "Order ska ha anlänt." };
       }
     } else {
-      throw new Error('Hittar inte order i systemet');
+      throw new Error("Hittar inte order i systemet");
     }
   } catch (err) {
     return { status: 404, error: err.message };
