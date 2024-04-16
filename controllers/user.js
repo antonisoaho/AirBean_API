@@ -9,6 +9,8 @@ router
   .post("/signup", async (req, res) => {
     const { username, password } = req.body;
 
+    if (!username || !password) throw new Error("Ogiltig data.");
+
     try {
       const userCreated = await postNewUser(username, password);
       if (userCreated.success) {
@@ -25,6 +27,8 @@ router
   })
   .post("/login", async (req, res) => {
     const { username, password } = req.body;
+
+    if (!username || !password) throw new Error("Ogiltig data.");
 
     const login = await loginUser(username, password);
 
