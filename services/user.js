@@ -20,7 +20,7 @@ const postNewUser = async (username, password) => {
         return {
           statusCode: 500,
           success: false,
-          message: "Internal Server Error",
+          message: "Internt serverfel",
         };
       } else {
         return {
@@ -49,7 +49,6 @@ const loginUser = async (username, password) => {
 
       return doc;
     });
-    console.log("user", user);
 
     if (user) {
       const passwordMatch = password === user.password;
@@ -84,7 +83,6 @@ const getUserHistory = async (userId) => {
           orderDate: order.orderDate,
         })
       );
-      console.log("userHistory", userHistory);
     } else {
       response = {
         success: false,
@@ -94,7 +92,6 @@ const getUserHistory = async (userId) => {
 
     return response;
   } catch (error) {
-    console.error("Error fetching user history:", error);
     return { success: false, error: error.message };
   }
 };

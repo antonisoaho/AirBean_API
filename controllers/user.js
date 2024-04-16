@@ -20,7 +20,7 @@ router
       }
     } catch (err) {
       console.error(err);
-      res.status(500).send({ success: false, message: "Internal Server Error" });
+      res.status(500).send({ success: false });
     }
   })
   .post("/login", async (req, res) => {
@@ -45,7 +45,7 @@ router
       res.send(orderhistory);
     } catch (error) {
       console.error(error);
-      res.status(500).send({ error: "Internal Server Error" });
+      res.status(500).send({ error: "Internt serverfel" });
     }
   })
   .get("/status", (req, res) => {

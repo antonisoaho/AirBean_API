@@ -8,7 +8,7 @@ const getMenuList = async () => {
 
     return menu.toString("utf-8");
   } catch (err) {
-    console.log(err);
+    throw new Error("Internt serverfel");
   }
 };
 
@@ -30,7 +30,9 @@ const postNewOrder = async (order, userId) => {
 
       return { eta: minutesEta, orderNr: newOrder._id };
     } else return false;
-  } catch (err) {}
+  } catch (err) {
+    throw new Error("Internt serverfel");
+  }
 };
 
 const validateOrderAndCalculateTotal = async (order) => {
