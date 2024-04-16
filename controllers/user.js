@@ -1,12 +1,12 @@
-const express = require('express');
-const { postNewUser, getUserHistory, loginUser } = require('../services/user');
-const { auth } = require('../middlewares/auth');
-require('dotenv').config();
+const express = require("express");
+const { postNewUser, getUserHistory, loginUser } = require("../services/user");
+const { auth, validateToken } = require("../middlewares/auth");
+require("dotenv").config();
 
 const router = express.Router();
 
 router
-  .post('/signup', async (req, res) => {
+  .post("/signup", async (req, res) => {
     const { username, password } = req.body;
 
     try {
@@ -14,21 +14,16 @@ router
       if (userCreated.success) {
         res.status(userCreated.statusCode).send({
           success: true,
-          message: userCreated.message,
         });
       } else {
-        res
-          .status(userCreated.statusCode)
-          .send({ success: false, message: userCreated.message });
+        res.status(userCreated.statusCode).send({ success: false });
       }
     } catch (err) {
       console.error(err);
-      res
-        .status(500)
-        .send({ success: false, message: 'Internal Server Error' });
+      res.status(500).send({ success: false, message: "Internal Server Error" });
     }
   })
-  .post('/login', async (req, res) => {
+  .post("/login", async (req, res) => {
     const { username, password } = req.body;
 
     const login = await loginUser(username, password);
@@ -40,7 +35,7 @@ router
       res.send({ success: login.success });
     }
   })
-  .get('/history', auth, async (req, res) => {
+  .get("/history", auth, async (req, res) => {
     // Leta upp vilka orders det finns på användaren, hämta alla orders på ID från collection orders
     try {
       //authenticate with auth middleware
@@ -50,11 +45,21 @@ router
       res.send(orderhistory);
     } catch (error) {
       console.error(error);
-      res.status(500).send({ error: 'Internal Server Error' });
+      res.status(500).send({ error: "Internal Server Error" });
     }
   })
-  .get('/status', (req, res) => {
-    // Kontrollera om en token är giltig eller inte
+  .get("/status", (req, res) => {
+    let response = {};
+    try {
+      response.success = validateToken(req);
+
+      res.send(response);
+    } catch (error) {
+      response.success = false;
+      response.error = error.message;
+
+      res.status(401).send(response);
+    }
   });
 
 module.exports = router;

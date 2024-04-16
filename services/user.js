@@ -1,32 +1,32 @@
-const db = require('../database');
-const jwt = require('jsonwebtoken');
+const db = require("../database");
+const jwt = require("jsonwebtoken");
 
 const postNewUser = async (username, password) => {
   // Logik för att se om befintligt användarnamn fortfarande finns, annars skapa upp användare och returnera ett lyckat avslut
   try {
-    const userExists = await db.users.findOne({ username });
+    const userExists = await db.users.findOne({ username: username });
 
     if (userExists) {
       return {
         statusCode: 400,
         success: false,
-        message: 'Användarnamnet finns redan',
+        message: "Användarnamnet finns redan",
       };
     } else {
-      const newUser = { username, password };
+      const newUser = { username: username, password: password };
       const userRegistered = await db.users.insert(newUser);
 
       if (!userRegistered) {
         return {
           statusCode: 500,
           success: false,
-          message: 'Internal Server Error',
+          message: "Internal Server Error",
         };
       } else {
         return {
           statusCode: 201,
           success: true,
-          message: 'Användare skapad',
+          message: "Användare skapad",
         };
       }
     }
@@ -34,7 +34,7 @@ const postNewUser = async (username, password) => {
     return {
       statusCode: 500,
       success: false,
-      message: 'Ett fel uppstod med databasen när användaren skulle skapas',
+      message: "Ett fel uppstod med databasen när användaren skulle skapas",
     };
   }
 };
@@ -49,7 +49,7 @@ const loginUser = async (username, password) => {
 
       return doc;
     });
-    console.log('user', user);
+    console.log("user", user);
 
     if (user) {
       const passwordMatch = password === user.password;
@@ -57,11 +57,7 @@ const loginUser = async (username, password) => {
       if (passwordMatch) {
         status = 200;
         success = true;
-        token = jwt.sign(
-          { userId: user._id, username: user.username },
-          process.env.JWT_KEY,
-          { expiresIn: '8h' }
-        );
+        token = jwt.sign({ userId: user._id, username: user.username }, process.env.JWT_KEY, { expiresIn: "8h" });
       }
     } else {
       status = 404;
@@ -88,17 +84,17 @@ const getUserHistory = async (userId) => {
           orderDate: order.orderDate,
         })
       );
-      console.log('userHistory', userHistory);
+      console.log("userHistory", userHistory);
     } else {
       response = {
         success: false,
-        error: 'Ingen historik funnen på användaren',
+        error: "Ingen historik funnen på användaren",
       };
     }
 
     return response;
   } catch (error) {
-    console.error('Error fetching user history:', error);
+    console.error("Error fetching user history:", error);
     return { success: false, error: error.message };
   }
 };
